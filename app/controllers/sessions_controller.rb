@@ -1,29 +1,36 @@
 class SessionsController < ApplicationController
 
-  def index
-
-  end
+  before_action :logged_in_redirect, only: [:new, :create ]
 
   def new
 
   end
 
   def create
-
-  end
-
-  def edit
-
-  end
-
-  def update
-
+    @user = User.find_by(username: params[:session][:username])
+    if @user && @user.authenticate(params[:session][:password])
+      session[:user_id] = @user.id
+      flash[:success] = "Welcome #{@user.username}!"
+      redirect_to root_path
+    else
+      flash.now[:error] = "Invalid Email and Password"
+      render 'new'
+    end
   end
 
   def destroy
-
+    session[:user_id] = nil
+    flash[:success] = "Successfully logged out"
+    redirect_to login_path
   end
 
   private
+
+  def logged_in_redirect
+    if logged_in?
+      flash[:error] = "You are already logged in #{current_user.username}"
+      redirect_to root_path
+    end
+  end
 
 end
